@@ -1,0 +1,52 @@
+name: Test and deploy
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  UT:
+    name: Unit tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: pass
+          POSTGRES_DB: testdb
+        options: >-
+          --health-cmd="pg_isready -U user"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=5
+        ports:
+          - 5432:5432    
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.12"
+
+      - run: pip install poetry
+
+      - name: Install dependencies
+        working-directory: app
+        run: poetry install --no-root
+
+      - name: Wait for Postgres
+        run: |
+          for i in {1..10}; do
+            pg_isready -h postgres -p 5432 -U user && break
+            echo "Waiting for Postgres..."
+            sleep 2
+          done        
+
+      - name: Run unit tests
+        env:
+          DATABASE_URL: postgres://admin:pwd@postgres:5432/tm      
+        working-directory: app
+        run: poetry run pytest -v          
