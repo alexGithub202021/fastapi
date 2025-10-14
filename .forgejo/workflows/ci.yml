@@ -13,9 +13,9 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_USER: user
-          POSTGRES_PASSWORD: pass
-          POSTGRES_DB: testdb
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: pwd
+          POSTGRES_DB: tm
         options: >-
           --health-cmd="pg_isready -U user"
           --health-interval=5s
@@ -40,7 +40,7 @@ jobs:
       - name: Wait for Postgres
         run: |
           for i in {1..10}; do
-            pg_isready -h postgres -p 5432 -U user && break
+            pg_isready -h postgres -p 5432 -U admin && break
             echo "Waiting for Postgres..."
             sleep 2
           done        
