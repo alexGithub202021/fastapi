@@ -17,6 +17,11 @@ jobs:
           python-version: "3.12.12"
 
       - run: pip install poetry
-      - run: cd app
-      - run: poetry install --no-root
-      - run: poetry run pytest -v
+
+      - name: Install dependencies
+        working-directory: app
+        run: poetry install --no-root
+
+      - name: Run unit tests
+        working-directory: app
+        run: poetry run pytest -v
