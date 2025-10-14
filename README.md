@@ -48,8 +48,7 @@ This a dockerised python fastapi REST API.
 
 
 ## Unit tests
-- launch CI
-- or connect to python container:
+- connect to python container:
   - docker exec -it [fastapi-python container id] bash
 - command:
   - poetry run pytest
