@@ -37,13 +37,13 @@ jobs:
         working-directory: app
         run: poetry install --no-root
 
-      - name: Wait for Postgres
-        run: |
-          for i in {1..10}; do
-            pg_isready -h postgres -p 5432 -U admin && break
-            echo "Waiting for Postgres..."
-            sleep 2
-          done        
+      # - name: Wait for Postgres
+      #   run: |
+      #     for i in {1..10}; do
+      #       pg_isready -h postgres -p 5432 -U admin && break
+      #       echo "Waiting for Postgres..."
+      #       sleep 2
+      #     done        
 
       - name: Run unit tests
         env:
