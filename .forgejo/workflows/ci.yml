@@ -15,7 +15,9 @@ jobs:
         run: |
           apt-get update -y
           apt-get install -y docker.io
-          apt-get install -y docker-compose-plugin
+          mkdir -p ~/.docker/cli-plugins
+          curl -SL https://github.com/docker/compose/releases/download/v2.29.6/docker-compose-linux-$(uname -m) -o ~/.docker/cli-plugins/docker-compose
+          chmod +x ~/.docker/cli-plugins/docker-compose
 
       - name: Build and start containers
         run: docker-compose -f docker-compose.yml up -d --build db python
