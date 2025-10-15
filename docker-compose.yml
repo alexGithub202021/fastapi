@@ -8,7 +8,6 @@ services:
     ports:
       - "8000:8000"
       - "5680:5680"
-    #command: ["python3", "-Xfrozen_modules=off", "main_debug.py"] #for debugger
     volumes:
       - ./app:/app
     depends_on:
