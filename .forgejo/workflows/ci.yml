@@ -11,6 +11,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install docker-compose
+        run: |
+          apk add --no-cache docker docker-compose      
+
       - name: Build and start containers
         run: docker-compose -f docker-compose.yml up -d --build db python
 
