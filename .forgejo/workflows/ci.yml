@@ -13,7 +13,7 @@ jobs:
 
       - name: Install docker-compose
         run: |
-          apt-get update && apt-get install docker docker-compose      
+          apt-get update -y && apt-get -y install docker-cli docker-compose      
 
       - name: Build and start containers
         run: docker-compose -f docker-compose.yml up -d --build db python
