@@ -46,6 +46,7 @@ This a dockerised python fastapi REST API.
 - go to project folder and setup the project: 
   - docker-compose up
 
+
 ## Unit tests
 - connect to python container:
   - docker exec -it [fastapi-python container id] bash
