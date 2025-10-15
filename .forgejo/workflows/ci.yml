@@ -6,47 +6,25 @@ on:
 
 jobs:
   UT:
-    name: Unit tests
     runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: admin
-          POSTGRES_PASSWORD: pwd
-          POSTGRES_DB: tm
-        options: >-
-          --health-cmd="pg_isready -U user"
-          --health-interval=5s
-          --health-timeout=5s
-          --health-retries=5
-        ports:
-          - 5432:5432    
 
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12.12"
+      - name: Build and start containers
+        run: docker compose -f docker-compose.yml up -d --build db python
 
-      - run: pip install poetry
-
-      - name: Install dependencies
-        working-directory: app
-        run: poetry install --no-root
-
-      # - name: Wait for Postgres
-      #   run: |
-      #     for i in {1..10}; do
-      #       pg_isready -h postgres -p 5432 -U admin && break
-      #       echo "Waiting for Postgres..."
-      #       sleep 2
-      #     done        
+      - name: Wait for DB readiness
+        run: |
+          for i in {1..10}; do
+            docker exec postgres16 pg_isready -U admin && break
+            echo "waiting for db..."
+            sleep 3
+          done
 
       - name: Run unit tests
-        env:
-          DATABASE_URL: postgres://admin:pwd@postgres:5432/tm      
-        working-directory: app
-        run: poetry run pytest -v          
+        run: docker exec python poetry run pytest -v
+
+      - name: Tear down
+        if: always()
+        run: docker compose -f docker-compose.yml down -v
