@@ -1,30 +1,11 @@
-name: Test and deploy
-
+name: Test CI
 on:
   push:
-    branches: ["main"]
+    branches: [ main ]
 
 jobs:
-  UT:
-    runs-on: ubuntu-latest
-
+  test:
+    runs-on: docker
     steps:
       - uses: actions/checkout@v4
-
-      - name: Build and start containers
-        run: docker compose -f docker-compose.yml up -d --build db python
-
-      - name: Wait for DB readiness
-        run: |
-          for i in {1..10}; do
-            docker exec postgres16 pg_isready -U admin && break
-            echo "waiting for db..."
-            sleep 3
-          done
-
-      - name: Run unit tests
-        run: docker exec python poetry run pytest -v
-
-      - name: Tear down
-        if: always()
-        run: docker compose -f docker-compose.yml down -v
+      - run: echo "Forgejo runner works!"
