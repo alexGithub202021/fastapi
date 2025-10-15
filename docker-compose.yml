@@ -1,7 +1,6 @@
 version: "3.2"
 
-networks:
-  fastapi:
+networks: fastapi
 
 services:
   python:
@@ -11,7 +10,7 @@ services:
     ports:
       - "8000:8000"
       - "5680:5680"
-    command: ["python3", "-Xfrozen_modules=off", "main_debug.py"] #for debugger
+    #command: ["python3", "-Xfrozen_modules=off", "main_debug.py"] #for debugger
     volumes:
       - ./app:/app
     depends_on:
@@ -46,7 +45,7 @@ services:
       - "5432:5432"
     volumes:
       - ./pgdata:/var/lib/postgresql/data
-      - ./db_dump:/docker-entrypoint-initdb.d  # Mount SQL script 
+      - ./db_dump:/docker-entrypoint-initdb.d # Mount SQL script
     networks:
       - fastapi
 
@@ -62,4 +61,4 @@ services:
     depends_on:
       - db
     networks:
-      - fastapi  
+      - fastapi
