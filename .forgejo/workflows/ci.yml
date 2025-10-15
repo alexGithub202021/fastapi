@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build and start containers
-        run: docker compose -f docker-compose.yml up -d --build db python
+        run: docker-compose -f docker-compose.yml up -d --build db python
 
       - name: Wait for DB readiness
         run: |
@@ -27,4 +27,4 @@ jobs:
 
       - name: Tear down
         if: always()
-        run: docker compose -f docker-compose.yml down -v
+        run: docker-compose -f docker-compose.yml down -v
