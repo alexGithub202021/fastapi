@@ -14,7 +14,8 @@ jobs:
       - name: Install docker-compose
         run: |
           apt-get update -y
-          apt-get install -y docker.io    
+          apt-get install -y docker.io
+          apt-get install -y docker-compose-plugin
 
       - name: Build and start containers
         run: docker-compose -f docker-compose.yml up -d --build db python
