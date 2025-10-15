@@ -1,4 +1,4 @@
-name: Test and deploy
+name: Test and deploy (1)
 
 on:
   push:
@@ -7,22 +7,7 @@ on:
 jobs:
   UT:
     name: Unit tests
-    runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: user
-          POSTGRES_PASSWORD: pass
-          POSTGRES_DB: testdb
-        options: >-
-          --health-cmd="pg_isready -U user"
-          --health-interval=5s
-          --health-timeout=5s
-          --health-retries=5
-        ports:
-          - 5432:5432    
+    runs-on: ubuntu-latest  
 
     steps:
       - uses: actions/checkout@v4
@@ -35,18 +20,8 @@ jobs:
 
       - name: Install dependencies
         working-directory: app
-        run: poetry install --no-root
+        run: poetry install --no-root     
 
-      - name: Wait for Postgres
-        run: |
-          for i in {1..10}; do
-            pg_isready -h postgres -p 5432 -U user && break
-            echo "Waiting for Postgres..."
-            sleep 2
-          done        
-
-      - name: Run unit tests
-        env:
-          DATABASE_URL: postgres://admin:pwd@postgres:5432/tm      
+      - name: Run unit tests  
         working-directory: app
         run: poetry run pytest -v
