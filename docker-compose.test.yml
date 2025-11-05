@@ -9,11 +9,11 @@ services:
     ports:
       - "8000:8000"
       - "5680:5680"
-    volumes:
+    volumes:  
       - ./app:/app
     depends_on:
       - db
-    command: tail -f /dev/null  # keeps it alive for docker exec
+    command: tail -f /dev/null  # keeps it alive for docker exec -> github actions
     networks:
       - fastapi
     environment:
@@ -48,16 +48,16 @@ services:
     networks:
       - fastapi
 
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: pgadmin4
-    restart: unless-stopped
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: adminpwd
-    ports:
-      - "8082:80"
-    depends_on:
-      - db
-    networks:
-      - fastapi
+  # pgadmin:
+  #   image: dpage/pgadmin4:latest
+  #   container_name: pgadmin4
+  #   restart: unless-stopped
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: admin@example.com
+  #     PGADMIN_DEFAULT_PASSWORD: adminpwd
+  #   ports:
+  #     - "8082:80"
+  #   depends_on:
+  #     - db
+  #   networks:
+  #     - fastapi
