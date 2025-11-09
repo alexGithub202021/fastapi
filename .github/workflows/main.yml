@@ -50,7 +50,7 @@ jobs:
           INSTANCE_TYPE: t4g.small
           INSTANCE_NAME: i1
         run: |
-          bash launch-ec2.sh
+          bash ec2-launch.sh
 
   # deploy:
   #   needs: UT
