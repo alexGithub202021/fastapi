@@ -7,7 +7,6 @@ on:
 jobs:
   UT:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
@@ -28,6 +27,27 @@ jobs:
       - name: Tear down
         if: always()
         run: docker compose -f docker-compose.test.yml down -v
+
+  launch-ec2:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install AWS CLI
+        run: sudo apt-get update && sudo apt-get install -y awscli
+
+      - name: Launch EC2 instance
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
+          AMI_ID: ami-01b9f1e7dc427266e
+          KEY_NAME: ssh-key-1
+          SECURITY_GROUP_ID: sg-08bf60be2d844a0c4
+          INSTANCE_TYPE: t4g.small
+          INSTANCE_NAME: i1
+        run: |
+          bash launch-ec2.sh
 
   # deploy:
   #   needs: UT
