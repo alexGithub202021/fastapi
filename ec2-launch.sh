@@ -37,7 +37,7 @@ INSTANCE_ID=$(aws ec2 run-instances \
   --instance-type "$INSTANCE_TYPE" \
   --key-name "$KEY_NAME" \
   --security-group-ids "$SECURITY_GROUP_ID" \
-  # ${SUBNET_ID:+--subnet-id "$SUBNET_ID"} \
+  ${SUBNET_ID:+--subnet-id "$SUBNET_ID"} \
   --associate-public-ip-address \
   --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$INSTANCE_NAME}]" \
   --query 'Instances[0].InstanceId' \
