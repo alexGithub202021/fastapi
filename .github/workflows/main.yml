@@ -115,6 +115,12 @@ jobs:
           sudo apt-get install -y ansible sshpass
 
       # -------------------------------------------------
+      - name: Add EC2 host key
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H 54.196.200.35 >> ~/.ssh/known_hosts
+          
+      # -------------------------------------------------
       - name: Write SSH key
         run: echo "${{ secrets.AWS_SSH_KEY }}" > /tmp/aws_key.pem && chmod 400 /tmp/aws_key.pem
 
