@@ -28,13 +28,14 @@ jobs:
         if: always()
         run: docker compose -f docker-compose.test.yml down -v
 
-  launch-ec2:
+  launch-ec2: #shell script version
+    needs: UT
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
       - name: Check AWS CLI
-        run: aws --version      
+        run: aws --version
 
       # - name: Install AWS CLI
       #   run: sudo apt-get update && sudo apt-get install -y awscli #
@@ -53,32 +54,32 @@ jobs:
           bash ec2-launch.sh
 
   # deploy:
-  #   needs: UT
+  #   needs: launch-ec2
   #   runs-on: ubuntu-latest
   #   # environment: production
-  # steps:
-  #   - run: echo "Deploy"
+  #   steps:
+  #     - run: echo "Deploy"
 
-  #   - name: Checkout
-  #     uses: actions/checkout@v3
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
 
-  #   - name: Configure AWS credentials
-  #     uses: aws-actions/configure-aws-credentials@v1
-  #     with:
-  #       aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #       aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #       aws-region: ${{ env.AWS_REGION }}
+  #     - name: Configure AWS credentials
+  #       uses: aws-actions/configure-aws-credentials@v1
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: ${{ env.AWS_DEFAULT_REGION }}
 
-  #   - name: SSH into EC2 instance, copy files and deploy
-  #     id: EC2-actions-docker-compose
-  #     env:
-  #       host: ${{ secrets.EC2_HOST }}
-  #       username: ${{ secrets.EC2_USERNAME }}
-  #       key: ${{ secrets.EC2_SSH_KEY }}
-  #       port: ${{ secrets.EC2_SSH_PORT }}
-  #     run: |
-  #       echo "$key" > ssh_key.pem
-  #       chmod 500 ssh_key.pem
-  #       ssh -i ssh_key.pem -p $port -o StrictHostKeyChecking=no $username@$host 'sudo chmod 777 -R ts'
-  #       scp -r -i ssh_key.pem -P $port -o StrictHostKeyChecking=no ./* $username@$host:/home/ec2-user/ts -> git pull instead..
-  #       ssh -i ssh_key.pem -p $port -o StrictHostKeyChecking=yes $username@$host 'cd ts && docker-compose -f docker-compose.prod.yml up -d'
+  #     - name: SSH into EC2 instance, copy files and deploy
+  #       id: EC2-actions-docker-compose
+  #       env:
+  #         host: ${{ env.PUBLIC_IP }}
+  #         username: ${{ secrets.EC2_USERNAME }}
+  #         key: ${{ secrets.EC2_SSH_KEY }}
+  #         port: ${{ secrets.EC2_SSH_PORT }}
+  #       run: |
+  #         echo "$key" > ssh_key.pem
+  #         chmod 500 ssh_key.pem
+  #         ssh -i ssh_key.pem -p $port -o StrictHostKeyChecking=no $username@$host 'sudo chmod 777 -R fastapi'
+  #         scp -r -i ssh_key.pem -P $port -o StrictHostKeyChecking=no ./* $username@$host:/home/ubuntu/ts -> git pull instead..
+  #         ssh -i ssh_key.pem -p $port -o StrictHostKeyChecking=yes $username@$host 'cd fastapi && docker-compose -f docker-compose.prod.yml up -d'
