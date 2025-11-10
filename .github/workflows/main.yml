@@ -82,7 +82,7 @@ jobs:
 
       # -------------------------------------------------
       - name: Terraform Plan
-        run: terraform -chdir=${GITHUB_WORKSPACE}/terraform/regions/${{ matrix.region }} plan -out=tfplan -var="aws_region=${{ matrix.region }}" -var-file=terraform/env/dev.tfvars
+        run: terraform -chdir=${GITHUB_WORKSPACE}/terraform/regions/${{ matrix.region }} plan -out=tfplan -var="aws_region=${{ matrix.region }}" -var-file=${GITHUB_WORKSPACE}/terraform/env/dev.tfvars
 
       # -------------------------------------------------
       - name: Terraform Apply
