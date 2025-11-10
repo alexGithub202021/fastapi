@@ -41,6 +41,7 @@ jobs:
 
   # Job 2: Provision Infrastructure with Terraform
   terraform:
+    needs: UT
     name: Provision Infrastructure for ${{ matrix.region }}
     runs-on: ubuntu-latest
 
@@ -73,23 +74,23 @@ jobs:
 
       # -------------------------------------------------
       - name: Terraform Init
-        run: terraform -chdir=terraform/regions/${{ matrix.region }} init
+        run: terraform -chdir=${GITHUB_WORKSPACE}/terraform/regions/${{ matrix.region }} init 
 
       # -------------------------------------------------
       - name: Terraform Validate
-        run: terraform -chdir=terraform/regions/${{ matrix.region }} validate
+        run: terraform -chdir=${GITHUB_WORKSPACE}/terraform/regions/${{ matrix.region }} validate
 
       # -------------------------------------------------
       - name: Terraform Plan
-        run: terraform -chdir=terraform/regions/${{ matrix.region }} plan -out=tfplan -var="aws_region=${{ matrix.region }}" -var-file=terraform/env/dev.tfvars
+        run: terraform -chdir=${GITHUB_WORKSPACE}/terraform/regions/${{ matrix.region }} plan -out=tfplan -var="aws_region=${{ matrix.region }}" -var-file=terraform/env/dev.tfvars
 
       # -------------------------------------------------
       - name: Terraform Apply
-        run: terraform -chdir=terraform/regions/${{ matrix.region }} apply -auto-approve tfplan
+        run: terraform -chdir=${GITHUB_WORKSPACE}/terraform/regions/${{ matrix.region }} apply -auto-approve tfplan
 
 
 # Job 3: Infrastructure configuration with Ansible
-# launch-ec2: # shell script version
+# Ansible:
 #   needs: terraform
 #   runs-on: ubuntu-latest
 #   steps:
@@ -125,7 +126,7 @@ jobs:
 
 # Job 4: Cloud deployment
 # deploy:
-#   needs: launch-ec2
+#   needs: Ansible
 #   runs-on: ubuntu-latest
 #   # environment: production
 #   steps:
