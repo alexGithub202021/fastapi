@@ -6,7 +6,7 @@
     project_path: /var/www/fastapi
     git_repo: "git@github.com:alexGithub202021/fastapi.git"
     git_branch: "main"
-    # docker_compose_version: "2.21.0"
+    docker_compose_version: "2.21.0"
 
   tasks:
     # 1. Update system packages
