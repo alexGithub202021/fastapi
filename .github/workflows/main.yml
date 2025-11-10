@@ -99,6 +99,8 @@ jobs:
     needs: terraform
     name: Configure Cloud environment (AWS EC2 instance) and deploy application
     runs-on: ubuntu-latest
+    env:
+      ANSIBLE_HOST_KEY_CHECKING: "False"
     defaults:
       run:
         working-directory: ./ansible #
@@ -113,12 +115,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ansible sshpass
-
-      # -------------------------------------------------
-      - name: Add EC2 host key
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H 54.196.200.35 >> ~/.ssh/known_hosts
           
       # -------------------------------------------------
       - name: Write SSH key
