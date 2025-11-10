@@ -39,12 +39,18 @@
         state: started
         enabled: yes
 
+    # # 4. Install Docker Compose
+    # - name: Download Docker Compose binary
+    #   get_url:
+    #     url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-{{ ansible_system }}-{{ ansible_architecture }}"
+    #     dest: /usr/local/bin/docker-compose
+    #     mode: "0755"
+
     # 4. Install Docker Compose
-    - name: Download Docker Compose binary
-      get_url:
-        url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-{{ ansible_system }}-{{ ansible_architecture }}"
-        dest: /usr/local/bin/docker-compose
-        mode: "0755"
+    - name: Install Docker Compose
+      apt:
+        name: docker-compose
+        state: present
 
     # 5. Ensure project directory exists
     - name: Create project directory
@@ -65,8 +71,14 @@
         update: yes
         accept_hostkey: yes
 
-    # 7. Launch Docker Compose
+    # 7. Create logs dir
+    - name: Mkdir
+      command: cd "{{ project_path }}"/app \
+                sudo mkdir logs \
+                sudo chmod -R 600 logs   
+
+    # 8. Launch Docker Compose
     - name: Run Docker Compose up
-      command: docker-compose up -d
+      command: docker-compose -f docker-compose.prod.yml up -d
       args:
         chdir: "{{ project_path }}"
