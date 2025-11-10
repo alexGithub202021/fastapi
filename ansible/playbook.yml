@@ -1,12 +1,19 @@
 ---
 - name: Setup EC2 / App server
   hosts: all
-  become: yes # run tasks with elevated privileges (usually sudo).
+  become: yes
+  gather_facts: yes
+
   vars:
     project_path: /var/www/fastapi
     git_repo: "git@github.com:alexGithub202021/fastapi.git"
     git_branch: "main"
-    docker_compose_version: "2.21.0"
+    docker_compose_version: "{{ docker_compose_version | default('latest') }}"
+    compose_system_map:
+      Linux: linux
+    compose_arch_map:
+      x86_64: x86_64
+      aarch64: aarch64
 
   tasks:
     # 1. Update system packages
@@ -16,7 +23,7 @@
         upgrade: dist
         force_apt_get: yes
 
-    # 2. Install required libraries/tools
+    # 2. Install required packages
     - name: Install required packages
       apt:
         name:
@@ -39,14 +46,34 @@
         state: started
         enabled: yes
 
-    # 4. Install Docker Compose
+    # 4. Add ansible_user to docker group
+    - name: Add user to docker group
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
+    # 5. Download Docker Compose
     - name: Download Docker Compose binary
       get_url:
-        url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-{{ ansible_system }}-{{ ansible_architecture }}"
+        url: >-
+          {% if docker_compose_version == 'latest' %}
+          https://github.com/docker/compose/releases/latest/download/docker-compose-{{ compose_system_map[ansible_system] }}-{{ compose_arch_map[ansible_architecture] }}
+          {% else %}
+          https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-{{ compose_system_map[ansible_system] }}-{{ compose_arch_map[ansible_architecture] }}
+          {% endif %}
         dest: /usr/local/bin/docker-compose
         mode: "0755"
 
-    # 5. Ensure project directory exists
+    - name: Verify Docker Compose installation
+      command: /usr/local/bin/docker-compose --version
+      register: compose_ver
+      changed_when: false
+
+    - debug:
+        var: compose_ver.stdout
+
+    # 6. Ensure project directory exists
     - name: Create project directory
       file:
         path: "{{ project_path }}"
@@ -55,7 +82,7 @@
         group: "{{ ansible_user }}"
         mode: "0755"
 
-    # 6. Clone or pull latest project code
+    # 7. Clone or update Git repository
     - name: Clone or update Git repository
       git:
         repo: "{{ git_repo }}"
@@ -65,8 +92,8 @@
         update: yes
         accept_hostkey: yes
 
-    # 7. Launch Docker Compose
+    # 8. Run Docker Compose
     - name: Run Docker Compose up
-      command: docker-compose up -d
+      command: /usr/local/bin/docker-compose up -d
       args:
         chdir: "{{ project_path }}"
