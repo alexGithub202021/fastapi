@@ -1,7 +1,7 @@
 ---
 - name: Setup EC2 / App server
   hosts: all
-  become: yes
+  become: yes # run tasks with elevated privileges (usually sudo).
   vars:
     project_path: /var/www/fastapi
     git_repo: "git@github.com:alexGithub202021/fastapi.git"
