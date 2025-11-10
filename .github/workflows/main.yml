@@ -5,13 +5,11 @@ on:
     branches: ["main"]
 
 jobs:
-
   # Job 1: Run unit tests
   UT:
     runs-on: ubuntu-latest
-    
-    steps:
 
+    steps:
       # -------------------------------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -38,7 +36,6 @@ jobs:
         if: always()
         run: docker compose -f docker-compose.test.yml down -v
 
-
   # Job 2: Provision Infrastructure with Terraform
   terraform:
     needs: UT
@@ -55,7 +52,6 @@ jobs:
         working-directory: ./terraform
 
     steps:
-
       # -------------------------------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -74,7 +70,7 @@ jobs:
 
       # -------------------------------------------------
       - name: Terraform Init
-        run: terraform -chdir=${GITHUB_WORKSPACE}/terraform/regions/${{ matrix.region }} init 
+        run: terraform -chdir=${GITHUB_WORKSPACE}/terraform/regions/${{ matrix.region }} init
 
       # -------------------------------------------------
       - name: Terraform Validate
@@ -88,14 +84,38 @@ jobs:
       - name: Terraform Apply
         run: terraform -chdir=${GITHUB_WORKSPACE}/terraform/regions/${{ matrix.region }} apply -auto-approve tfplan
 
+      # -------------------------------------------------
+      - name: Extract EC2 Public IP
+        id: ec2
+        run: |
+          echo "instance_ip=$(terraform output -raw instance_public_ip)" >> $GITHUB_OUTPUT
 
-# Job 3: Infrastructure configuration with Ansible
-# Ansible:
-#   needs: terraform
-#   runs-on: ubuntu-latest
-#   steps:
-#     - uses: actions/checkout@v3
+    outputs: # to use IP in next jobs
+      ec2_ip: ${{ steps.extract_ip.outputs.instance_ip }}
 
+  # Job 3: Cloud environment configuration and application deployment with Ansible
+  Ansible:
+    needs: terraform
+    name: Configure Cloud environment (AWS EC2 instance) and deploy application
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./ansible #
+
+    steps:
+      # -------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -------------------------------------------------
+      - name: Set up Ansible
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ansible sshpass
+
+      - name: Run Ansible Playbook
+        run: |
+          ansible-playbook -i "${{ needs.terraform.outputs.ec2_ip }}," -u ubuntu --private-key ~/.ssh/${{ secrets.AWS_SECRET_ACCESS_KEY }} playbook.yml
 
 # Job 2: Infrastructure provisioning via shell script
 # launch-ec2: # shell script version
@@ -122,7 +142,6 @@ jobs:
 #         INSTANCE_NAME: i1
 #       run: |
 #         bash ec2-launch.sh
-
 
 # Job 4: Cloud deployment
 # deploy:

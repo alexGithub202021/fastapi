@@ -1,0 +1,72 @@
+---
+- name: Setup EC2 / App server
+  hosts: all
+  become: yes
+  vars:
+    project_path: /var/www/fastapi
+    git_repo: "git@github.com:alexGithub202021/fastapi.git"
+    git_branch: "main"
+    # docker_compose_version: "2.21.0"
+
+  tasks:
+    # 1. Update system packages
+    - name: Update and upgrade apt packages
+      apt:
+        update_cache: yes
+        upgrade: dist
+        force_apt_get: yes
+
+    # 2. Install required libraries/tools
+    - name: Install required packages
+      apt:
+        name:
+          - git
+          - curl
+          - python3-pip
+          - build-essential
+          - vim
+        state: present
+
+    # 3. Install Docker
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+
+    - name: Ensure Docker service is running
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    # 4. Install Docker Compose
+    - name: Download Docker Compose binary
+      get_url:
+        url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-{{ ansible_system }}-{{ ansible_architecture }}"
+        dest: /usr/local/bin/docker-compose
+        mode: "0755"
+
+    # 5. Ensure project directory exists
+    - name: Create project directory
+      file:
+        path: "{{ project_path }}"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: "0755"
+
+    # 6. Clone or pull latest project code
+    - name: Clone or update Git repository
+      git:
+        repo: "{{ git_repo }}"
+        dest: "{{ project_path }}"
+        version: "{{ git_branch }}"
+        force: yes
+        update: yes
+        accept_hostkey: yes
+
+    # 7. Launch Docker Compose
+    - name: Run Docker Compose up
+      command: docker-compose up -d
+      args:
+        chdir: "{{ project_path }}"
