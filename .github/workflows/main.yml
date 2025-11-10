@@ -115,9 +115,13 @@ jobs:
           sudo apt-get install -y ansible sshpass
 
       # -------------------------------------------------
-      - name: Run Ansible Playbook
-        run: |
-          ansible-playbook -i "${{ needs.terraform.outputs.ec2_ip }}," -u ubuntu --private-key ${{ secrets.AWS_SSH_KEY }} playbook.yml
+      - name: Write SSH key
+        run: echo "${{ secrets.AWS_SSH_KEY }}" > /tmp/aws_key.pem && chmod 400 /tmp/aws_key.pem
+
+      # -------------------------------------------------
+      - name: Run Ansible
+        run: ansible-playbook -i "${{ needs.terraform.outputs.ec2_ip }}," -u ubuntu --private-key /tmp/aws_key.pem playbook.yml
+
 
 # Job 2: Infrastructure provisioning via shell script
 # launch-ec2: # shell script version
