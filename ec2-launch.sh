@@ -62,5 +62,5 @@ PUBLIC_IP=$(aws ec2 describe-instances \
 
 echo "✅ Instance is running."
 echo "🌐 Public IP: $PUBLIC_IP"
-echo "$PUBLIC_IP" >> $GITHUB_ENV
+echo "$PUBLIC_IP=$PUBLIC_IP" >> $GITHUB_ENV
 echo "🧩 Connect via: ssh -i ~/.ssh/${KEY_NAME}.pem ubuntu@${PUBLIC_IP}"
