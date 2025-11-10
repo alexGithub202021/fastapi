@@ -86,13 +86,13 @@ jobs:
 
       # -------------------------------------------------
       - name: Extract EC2 Public IP
-        id: ec2
+        id: ec2_ip
         run: |
           IP=$(terraform -chdir=${GITHUB_WORKSPACE}/terraform/regions/${{ matrix.region }} output -raw instance_public_ip 2>/dev/null || true)
           echo "instance_ip=$IP" >> "$GITHUB_OUTPUT"
 
     outputs: # to use IP in next jobs
-      ec2_ip: ${{ steps.extract_ip.outputs.instance_ip }}
+      ec2_ip: ${{ steps.ec2_ip.outputs.instance_ip }}
 
   # Job 3: Cloud environment configuration and application deployment with Ansible
   Ansible:
@@ -116,7 +116,6 @@ jobs:
 
       - name: Run Ansible Playbook
         run: |
-          echo ${{ needs.terraform.outputs.ec2_ip }}
           ansible-playbook -i "${{ needs.terraform.outputs.ec2_ip }}," -u ubuntu --private-key ~/.ssh/${{ secrets.AWS_SECRET_ACCESS_KEY }} playbook.yml
 
 # Job 2: Infrastructure provisioning via shell script
