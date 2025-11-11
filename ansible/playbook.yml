@@ -1,36 +1,28 @@
 ---
-- name: Setup EC2 / App server
+- name: Setup FastAPI app on EC2
   hosts: all
-  become: yes # run tasks with elevated privileges (usually sudo).
+  become: yes
+  gather_facts: yes
+
   vars:
-    project_path: /var/www/fastapi
+    project_path: /home/{{ ansible_user }}/fastapi
     git_repo: "git@github.com:alexGithub202021/fastapi.git"
-    git_branch: "main"
-    # docker_compose_version: "2.21.0"
+    docker_compose_file: docker-compose.prod.yml
 
   tasks:
-    # 1. Update system packages
-    - name: Update and upgrade apt packages
+    # 1. Update apt packages
+    - name: Update apt cache and upgrade
       apt:
         update_cache: yes
         upgrade: dist
         force_apt_get: yes
 
-    # 2. Install required libraries/tools
-    - name: Install required packages
+    # 2. Install Docker and Docker Compose via apt
+    - name: Install Docker and Docker Compose
       apt:
         name:
-          - git
-          - curl
-          - python3-pip
-          - build-essential
-          - vim
-        state: present
-
-    # 3. Install Docker
-    - name: Install Docker
-      apt:
-        name: docker.io
+          - docker.io
+          - docker-compose
         state: present
 
     - name: Ensure Docker service is running
@@ -39,20 +31,14 @@
         state: started
         enabled: yes
 
-    # # 4. Install Docker Compose
-    # - name: Download Docker Compose binary
-    #   get_url:
-    #     url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-{{ ansible_system }}-{{ ansible_architecture }}"
-    #     dest: /usr/local/bin/docker-compose
-    #     mode: "0755"
+    # 3. Add user to Docker group
+    - name: Add ansible user to docker group
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
 
-    # 4. Install Docker Compose
-    - name: Install Docker Compose
-      apt:
-        name: docker-compose
-        state: present
-
-    # 5. Ensure project directory exists
+    # 4. Ensure project directory exists
     - name: Create project directory
       file:
         path: "{{ project_path }}"
@@ -61,24 +47,48 @@
         group: "{{ ansible_user }}"
         mode: "0755"
 
-    # 6. Clone or pull latest project code
+    # 5. Copy SSH private key from CI environment (if needed)
+    - name: Write SSH key from environment
+      copy:
+        content: "{{ lookup('env','AWS_SSH_PV_KEY') }}"
+        dest: /home/{{ ansible_user }}/.ssh/id_rsa
+        mode: "0600"
+      when: lookup('env','AWS_SSH_PV_KEY', default='') != ''
+
+    # 6. Ensure .ssh permissions are correct
+    - name: Set .ssh directory permissions
+      file:
+        path: /home/{{ ansible_user }}/.ssh
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: "0700"
+
+    # 7. Clone or update the Git repository
     - name: Clone or update Git repository
       git:
         repo: "{{ git_repo }}"
         dest: "{{ project_path }}"
-        version: "{{ git_branch }}"
+        version: main
         force: yes
         update: yes
         accept_hostkey: yes
+        key_file: /home/{{ ansible_user }}/.ssh/id_rsa
 
-    # 7. Create logs dir
-    - name: Mkdir
-      command: cd "{{ project_path }}"/app \
-                sudo mkdir logs \
-                sudo chmod -R 600 logs   
+    # 8. Create logs directory inside app
+    - name: Create logs directory
+      file:
+        path: "{{ project_path }}/app/logs"
+        state: directory
+        mode: "0777"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
 
-    # 8. Launch Docker Compose
-    - name: Run Docker Compose up
-      command: docker-compose -f docker-compose.prod.yml up -d
+    # 9. Run Docker Compose
+    - name: Launch Docker Compose
+      command: docker-compose -f {{ docker_compose_file }} up -d
       args:
         chdir: "{{ project_path }}"
+      environment:
+        PATH: "/usr/local/bin:/usr/bin:{{ ansible_env.PATH }}"
+      become: yes

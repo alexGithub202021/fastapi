@@ -104,7 +104,6 @@ jobs:
     defaults:
       run:
         working-directory: ./ansible #
-
     steps:
       # -------------------------------------------------
       - name: Checkout repository
@@ -123,7 +122,7 @@ jobs:
       # -------------------------------------------------
       - name: Run Ansible
         run: ansible-playbook -i "13.217.198.142," -u ubuntu --private-key /tmp/aws_key.pem playbook.yml
-
+        
 # Job 2: Infrastructure provisioning via shell script
 # launch-ec2: # shell script version
 #   needs: UT
