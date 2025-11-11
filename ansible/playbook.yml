@@ -50,10 +50,10 @@
     # 5. Copy SSH private key from CI environment (if needed)
     - name: Write SSH key from environment
       copy:
-        content: "{{ lookup('env','AWS_SSH_PV_KEY') }}"
+        content: "{{ lookup('env','AWS_SSH_KEY') }}"
         dest: /home/{{ ansible_user }}/.ssh/id_rsa
         mode: "0600"
-      when: lookup('env','AWS_SSH_PV_KEY', default='') != ''
+      when: lookup('env','AWS_SSH_KEY', default='') != ''
 
     # 6. Ensure .ssh permissions are correct
     - name: Set .ssh directory permissions
