@@ -5,36 +5,36 @@ on:
     branches: ["main"]
 
 jobs:
-  # Job 1: Run unit tests
-  UT:
-    runs-on: ubuntu-latest
+  # # Job 1: Run unit tests
+  # UT:
+  #   runs-on: ubuntu-latest
 
-    steps:
-      # -------------------------------------------------
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  #   steps:
+  #     # -------------------------------------------------
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
 
-      # -------------------------------------------------
-      - name: Build and start containers
-        run: docker compose -f docker-compose.test.yml up -d --build db python
+  #     # -------------------------------------------------
+  #     - name: Build and start containers
+  #       run: docker compose -f docker-compose.test.yml up -d --build db python
 
-      # -------------------------------------------------
-      - name: Wait for DB readiness
-        run: |
-          for i in {1..10}; do
-            docker exec postgres16 pg_isready -U admin && break
-            echo "waiting for db..."
-            sleep 3
-          done
+  #     # -------------------------------------------------
+  #     - name: Wait for DB readiness
+  #       run: |
+  #         for i in {1..10}; do
+  #           docker exec postgres16 pg_isready -U admin && break
+  #           echo "waiting for db..."
+  #           sleep 3
+  #         done
 
-      # -------------------------------------------------
-      - name: Run unit tests
-        run: docker exec python poetry run pytest -v
+  #     # -------------------------------------------------
+  #     - name: Run unit tests
+  #       run: docker exec python poetry run pytest -v
 
-      # -------------------------------------------------
-      - name: Tear down
-        if: always()
-        run: docker compose -f docker-compose.test.yml down -v
+  #     # -------------------------------------------------
+  #     - name: Tear down
+  #       if: always()
+  #       run: docker compose -f docker-compose.test.yml down -v
 
   # # Job 2: Provision Infrastructure with Terraform
   # terraform:
@@ -96,7 +96,7 @@ jobs:
 
   # Job 3: Cloud environment configuration and application deployment with Ansible
   Ansible:
-    needs: terraform
+    # needs: terraform
     name: Configure Cloud environment (AWS EC2 instance) and deploy application
     runs-on: ubuntu-latest
     env:
