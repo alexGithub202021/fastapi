@@ -95,32 +95,32 @@ jobs:
       ec2_ip: ${{ steps.ec2_ip.outputs.instance_ip }}
 
   # Job 3: Cloud environment configuration and application deployment with Ansible
-  Ansible:
-    needs: terraform
-    name: Configure Cloud environment (AWS EC2 instance) and deploy application
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./ansible #
+  # Ansible:
+  #   needs: terraform
+  #   name: Configure Cloud environment (AWS EC2 instance) and deploy application
+  #   runs-on: ubuntu-latest
+  #   defaults:
+  #     run:
+  #       working-directory: ./ansible #
 
-    steps:
-      # -------------------------------------------------
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  #   steps:
+  #     # -------------------------------------------------
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
 
-      # -------------------------------------------------
-      - name: Set up Ansible
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ansible sshpass
+  #     # -------------------------------------------------
+  #     - name: Set up Ansible
+  #       run: |
+  #         sudo apt-get update
+  #         sudo apt-get install -y ansible sshpass
 
-      # -------------------------------------------------
-      - name: Write SSH key
-        run: echo "${{ secrets.AWS_SSH_KEY }}" > /tmp/aws_key.pem && chmod 400 /tmp/aws_key.pem
+  #     # -------------------------------------------------
+  #     - name: Write SSH key
+  #       run: echo "${{ secrets.AWS_SSH_KEY }}" > /tmp/aws_key.pem && chmod 400 /tmp/aws_key.pem
 
-      # -------------------------------------------------
-      - name: Run Ansible
-        run: ansible-playbook -i "${{ needs.terraform.outputs.ec2_ip }}," -u ubuntu --private-key /tmp/aws_key.pem playbook.yml
+  #     # -------------------------------------------------
+  #     - name: Run Ansible
+  #       run: ansible-playbook -i "${{ needs.terraform.outputs.ec2_ip }}," -u ubuntu --private-key /tmp/aws_key.pem playbook.yml
 
 
 # Job 2: Infrastructure provisioning via shell script
@@ -149,7 +149,7 @@ jobs:
 #       run: |
 #         bash ec2-launch.sh
 
-# Job 4: Cloud deployment
+# Job 3: Cloud deployment (if no ansible)
 # deploy:
 #   needs: Ansible
 #   runs-on: ubuntu-latest
