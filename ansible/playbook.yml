@@ -47,26 +47,7 @@
         group: "{{ ansible_user }}"
         mode: "0755"
 
-    # 5. Copy SSH private key from CI environment (if needed)
-    # - name: Write SSH key from environment
-    #   copy:
-    #     content: "{{ lookup('env','AWS_SSH_KEY') }}"
-    #     dest: /home/{{ ansible_user }}/.ssh/id_rsa
-    #     mode: "0600"
-    #   become: no
-    #   when: lookup('env','AWS_SSH_KEY', default='') != ''
-
-    # 6. Ensure .ssh permissions are correct
-    - name: Set .ssh directory permissions
-      file:
-        path: /home/{{ ansible_user }}/.ssh
-        state: directory
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
-        mode: "0700"
-      become: no
-
-    # 7. Add GitHub host key
+    # 5. Add GitHub host key
     - name: Add GitHub.com SSH host key
       known_hosts:
         name: github.com
@@ -74,7 +55,7 @@
         path: /home/{{ ansible_user }}/.ssh/known_hosts
         state: present
 
-    # 8. Fix permissions of known_hosts file
+    # 6. Fix permissions of known_hosts file
     - name: Set correct permissions for known_hosts
       file:
         path: /home/{{ ansible_user }}/.ssh/known_hosts
@@ -82,7 +63,7 @@
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
 
-    # 9. Clone or update the Git repository
+    # 7. Clone or update the Git repository
     - name: Clone or update Git repository
       git:
         repo: "{{ git_repo }}"
@@ -90,13 +71,12 @@
         version: main
         force: yes
         update: yes
-        accept_hostkey: yes
-        key_file: "/tmp/aws_key.pem"
+        # accept_hostkey: yes
       environment:
         HOME: /home/{{ ansible_user }}
       become: no
 
-    # 10. Create logs directory inside app
+    # 8. Create logs directory inside app
     - name: Create logs directory
       file:
         path: "{{ project_path }}/app/logs"
@@ -106,7 +86,7 @@
         group: "{{ ansible_user }}"
       become: yes
 
-    # 11. Run Docker Compose
+    # 9. Run Docker Compose
     - name: Launch Docker Compose
       command: docker-compose -f {{ docker_compose_file }} up -d
       args:
