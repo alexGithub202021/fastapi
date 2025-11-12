@@ -65,9 +65,9 @@
         force: yes
         update: yes
         # accept_hostkey: yes
-      become_user: "{{ ansible_user }}"
       environment:
         HOME: /home/{{ ansible_user }}
+      become: no
 
     - name: Create logs directory
       file:
