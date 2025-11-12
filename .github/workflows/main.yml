@@ -115,9 +115,9 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.AWS_SSH_KEY }}        
 
-      # -------------------------------------------------
-      - name: Test SSH (optional)
-        run: ssh -T git@github.com  # Should say "Hi username! You've successfully authenticated..."
+      # # -------------------------------------------------
+      # - name: Test SSH (optional)
+      #   run: ssh -T git@github.com  # Should say "Hi username! You've successfully authenticated..."
 
       # -------------------------------------------------
       - name: Set up Ansible
