@@ -10,10 +10,10 @@
     docker_compose_file: docker-compose.prod.yml
 
   tasks:
-    # - name: Confirm GitHub key is passed
-    #   debug:
-    #     msg: "GitHub key length: {{ github_ssh_key_content | length }} chars, testEcho: {{ testEcho | default('MISSING') }}, ssh k: {{ github_ssh_key_content }}"
-    #   when: github_ssh_key_content is defined
+    - name: Confirm GitHub key is passed
+      debug:
+        msg: "GitHub key length: {{ github_ssh_key_content | length }} chars, testEcho: {{ testEcho | default('MISSING') }}, ssh k: {{ github_ssh_key_content }}"
+      when: github_ssh_key_content is defined
 
     - name: Update apt cache and upgrade
       apt:
