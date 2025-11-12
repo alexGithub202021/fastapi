@@ -55,7 +55,18 @@
         mode: "0600"
       when: lookup('env','AWS_SSH_KEY', default='') != ''
 
-    # 6. Ensure .ssh permissions are correct
+    # 6. Dynamically add GitHub host key
+    - name: Add GitHub.com SSH host key automatically
+      known_hosts:
+        name: github.com
+        key: "{{ lookup('pipe', 'ssh-keyscan -H github.com 2>/dev/null') }}"
+        path: /home/{{ ansible_user }}/.ssh/known_hosts
+        state: present
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: "0644"
+
+    # 7. Ensure .ssh permissions are correct
     - name: Set .ssh directory permissions
       file:
         path: /home/{{ ansible_user }}/.ssh
@@ -64,7 +75,7 @@
         group: "{{ ansible_user }}"
         mode: "0700"
 
-    # 7. Clone or update the Git repository
+    # 8. Clone or update the Git repository
     - name: Clone or update Git repository
       git:
         repo: "{{ git_repo }}"
@@ -75,7 +86,7 @@
         accept_hostkey: yes
         key_file: /home/{{ ansible_user }}/.ssh/id_rsa
 
-    # 8. Create logs directory inside app
+    # 9. Create logs directory inside app
     - name: Create logs directory
       file:
         path: "{{ project_path }}/app/logs"
@@ -84,7 +95,7 @@
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
 
-    # 9. Run Docker Compose
+    # 10. Run Docker Compose
     - name: Launch Docker Compose
       command: docker-compose -f {{ docker_compose_file }} up -d
       args:
