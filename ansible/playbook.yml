@@ -42,7 +42,7 @@
         owner: "{{ ansible_user }}"
         mode: "0700"
 
-    - me: Install GitHub deploy key
+    - name: Install GitHub deploy key
       copy:
         content: /tmp/aws_key.pem
         dest: /home/{{ ansible_user }}/.ssh/id_github
