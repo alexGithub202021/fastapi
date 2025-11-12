@@ -12,7 +12,7 @@
   tasks:
 
     - name: check ssh k
-      shell: echo "ssh key: {{ github_ssh_key_content }}, test parameter: {{ testEcho }}" 
+      shell: "echo 'ssh key: {{ github_ssh_key_content }}, test parameter: {{ testEcho }}'"
 
     # - name: Update apt cache and upgrade
     #   apt:
