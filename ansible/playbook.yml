@@ -10,11 +10,6 @@
     docker_compose_file: docker-compose.prod.yml
 
   tasks:
-    - name: Confirm GitHub key is passed
-      debug:
-        msg: "GitHub key length: {{ github_ssh_key_content | length }} chars, testEcho: {{ testEcho | default('MISSING') }}, ssh k: {{ github_ssh_key_content }}"
-      when: github_ssh_key_content is defined
-
     - name: Update apt cache and upgrade
       apt:
         update_cache: yes
@@ -39,35 +34,6 @@
         name: "{{ ansible_user }}"
         groups: docker
         append: yes
-
-    - name: Create .ssh dir
-      file:
-        path: /home/{{ ansible_user }}/.ssh
-        state: directory
-        owner: "{{ ansible_user }}"
-        mode: "0700"
-      become: no
-
-    - name: Install GitHub deploy key
-      copy:
-        content: "{{ github_ssh_key_content }}"
-        dest: /home/{{ ansible_user }}/.ssh/id_github
-        owner: "{{ ansible_user }}"
-        mode: "0600"
-      when: github_deploy_key is defined
-      become: no
-
-    - name: SSH config for GitHub
-      copy:
-        dest: /home/{{ ansible_user }}/.ssh/config
-        content: |
-          Host github.com
-            User git
-            IdentityFile /home/{{ ansible_user }}/.ssh/id_github
-            StrictHostKeyChecking yes
-        owner: "{{ ansible_user }}"
-        mode: "0600"
-      become: no
 
     - name: Create project directory
       file:
@@ -99,9 +65,9 @@
         force: yes
         update: yes
         # accept_hostkey: yes
+      become_user: "{{ ansible_user }}"
       environment:
         HOME: /home/{{ ansible_user }}
-      become: no
 
     - name: Create logs directory
       file:
