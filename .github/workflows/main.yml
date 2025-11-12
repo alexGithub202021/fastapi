@@ -115,6 +115,7 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.GITHUB_DEPLOY_KEY }}        
 
+      # -------------------------------------------------
       - name: Test SSH (optional)
         run: ssh -T git@github.com  # Should say "Hi username! You've successfully authenticated..."
 
@@ -140,7 +141,7 @@ jobs:
       # -------------------------------------------------
       - name: Run Ansible
         run: |
-          ansible-playbook -i "${{ needs.terraform.outputs.ec2_ip }}," \
+          ansible-playbook -i "34.201.63.93," \
             -u ubuntu \
             --private-key /tmp/aws_key.pem \
             playbook.yml
