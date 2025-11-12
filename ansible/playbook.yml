@@ -35,6 +35,32 @@
         groups: docker
         append: yes
 
+    - name: Create .ssh dir
+      file:
+        path: /home/{{ ansible_user }}/.ssh
+        state: directory
+        owner: "{{ ansible_user }}"
+        mode: "0700"
+
+    - me: Install GitHub deploy key
+      copy:
+        content: /tmp/aws_key.pem
+        dest: /home/{{ ansible_user }}/.ssh/id_github
+        owner: "{{ ansible_user }}"
+        mode: "0600"
+      when: github_deploy_key is defined
+
+    - name: SSH config for GitHub
+      copy:
+        dest: /home/{{ ansible_user }}/.ssh/config
+        content: |
+          Host github.com
+            User git
+            IdentityFile /home/{{ ansible_user }}/.ssh/id_github
+            StrictHostKeyChecking yes
+        owner: "{{ ansible_user }}"
+        mode: "0600"        
+
     - name: Create project directory
       file:
         path: "{{ project_path }}"
