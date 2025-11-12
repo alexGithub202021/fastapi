@@ -131,7 +131,8 @@ jobs:
       # -------------------------------------------------
       - name: Run Ansible
         # run: ansible-playbook -i "${{ needs.terraform.outputs.ec2_ip }} ," -u ubuntu --private-key /tmp/aws_key.pem playbook.yml
-        run: ansible-playbook -i "34.201.63.93," -u ubuntu --private-key /tmp/aws_key.pem playbook.yml -e "github_ssh_key_content=${{ secrets.AWS_SSH_KEY }}"
+        run: ansible-playbook -i "34.201.63.93," -u ubuntu --private-key /tmp/aws_key.pem playbook.yml -e "github_ssh_key_content='{{ lookup('file','/tmp/aws_key.pem') }}'"
+
 
 # Job 2: Infrastructure provisioning via shell script
 # launch-ec2: # shell script version
