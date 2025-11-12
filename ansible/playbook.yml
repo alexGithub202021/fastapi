@@ -16,9 +16,6 @@
         msg: "GitHub key length: {{ github_ssh_key_content | length }} chars, testEcho: {{ testEcho | default('MISSING') }}, ssh k: {{ github_ssh_key_content }}"
       when: github_ssh_key_content is defined    
 
-    - name: check ssh k
-      command: echo ssh key: {{ github_ssh_key_content }}, test parameter: {{ testEcho }}
-    
 
     # - name: Update apt cache and upgrade
     #   apt:
