@@ -5,94 +5,94 @@ on:
     branches: ["main"]
 
 jobs:
-  # Job 1: Run unit tests
-  UT:
-    runs-on: ubuntu-latest
+  # # Job 1: Run unit tests
+  # UT:
+  #   runs-on: ubuntu-latest
 
-    steps:
-      # -------------------------------------------------
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  #   steps:
+  #     # -------------------------------------------------
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
 
-      # -------------------------------------------------
-      - name: Build and start containers
-        run: docker compose -f docker-compose.test.yml up -d --build db python
+  #     # -------------------------------------------------
+  #     - name: Build and start containers
+  #       run: docker compose -f docker-compose.test.yml up -d --build db python
 
-      # -------------------------------------------------
-      - name: Wait for DB readiness
-        run: |
-          for i in {1..10}; do
-            docker exec postgres16 pg_isready -U admin && break
-            echo "waiting for db..."
-            sleep 3
-          done
+  #     # -------------------------------------------------
+  #     - name: Wait for DB readiness
+  #       run: |
+  #         for i in {1..10}; do
+  #           docker exec postgres16 pg_isready -U admin && break
+  #           echo "waiting for db..."
+  #           sleep 3
+  #         done
 
-      # -------------------------------------------------
-      - name: Run unit tests
-        run: docker exec python poetry run pytest -v
+  #     # -------------------------------------------------
+  #     - name: Run unit tests
+  #       run: docker exec python poetry run pytest -v
 
-      # -------------------------------------------------
-      - name: Tear down
-        if: always()
-        run: docker compose -f docker-compose.test.yml down -v
+  #     # -------------------------------------------------
+  #     - name: Tear down
+  #       if: always()
+  #       run: docker compose -f docker-compose.test.yml down -v
 
   # Job 2: Provision Infrastructure with Terraform
-  terraform:
-    needs: UT
-    name: Provision Infrastructure for ${{ matrix.region }}
-    runs-on: ubuntu-latest
+  # terraform:
+  #   needs: UT
+  #   name: Provision Infrastructure for ${{ matrix.region }}
+  #   runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        region: [us-east-1] # add or remove as needed, xpl: [us-east-1, eu-west-1, ap-southeast-1]
-      fail-fast: false # continue other regions even if one fails
+  #   strategy:
+  #     matrix:
+  #       region: [us-east-1] # add or remove as needed, xpl: [us-east-1, eu-west-1, ap-southeast-1]
+  #     fail-fast: false # continue other regions even if one fails
 
-    defaults:
-      run:
-        working-directory: ./terraform
+  #   defaults:
+  #     run:
+  #       working-directory: ./terraform
 
-    steps:
-      # -------------------------------------------------
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  #   steps:
+  #     # -------------------------------------------------
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
 
-      # -------------------------------------------------
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+  #     # -------------------------------------------------
+  #     - name: Setup Terraform
+  #       uses: hashicorp/setup-terraform@v3
 
-      # -------------------------------------------------
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ matrix.region }}
+  #     # -------------------------------------------------
+  #     - name: Configure AWS Credentials
+  #       uses: aws-actions/configure-aws-credentials@v4
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: ${{ matrix.region }}
 
-      # -------------------------------------------------
-      - name: Terraform Init
-        run: terraform -chdir=${GITHUB_WORKSPACE}/terraform/regions/${{ matrix.region }} init
+  #     # -------------------------------------------------
+  #     - name: Terraform Init
+  #       run: terraform -chdir=${GITHUB_WORKSPACE}/terraform/regions/${{ matrix.region }} init
 
-      # -------------------------------------------------
-      - name: Terraform Validate
-        run: terraform -chdir=${GITHUB_WORKSPACE}/terraform/regions/${{ matrix.region }} validate
+  #   # -------------------------------------------------
+  #   - name: Terraform Validate
+  #     run: terraform -chdir=${GITHUB_WORKSPACE}/terraform/regions/${{ matrix.region }} validate
 
-      # -------------------------------------------------
-      - name: Terraform Plan
-        run: terraform -chdir=${GITHUB_WORKSPACE}/terraform/regions/${{ matrix.region }} plan -out=tfplan -var="aws_region=${{ matrix.region }}" -var-file=${GITHUB_WORKSPACE}/terraform/env/dev.tfvars
+  #   # -------------------------------------------------
+  #   - name: Terraform Plan
+  #     run: terraform -chdir=${GITHUB_WORKSPACE}/terraform/regions/${{ matrix.region }} plan -out=tfplan -var="aws_region=${{ matrix.region }}" -var-file=${GITHUB_WORKSPACE}/terraform/env/dev.tfvars
 
-      # -------------------------------------------------
-      - name: Terraform Apply
-        run: terraform -chdir=${GITHUB_WORKSPACE}/terraform/regions/${{ matrix.region }} apply -auto-approve tfplan
+  #   # -------------------------------------------------
+  #   - name: Terraform Apply
+  #     run: terraform -chdir=${GITHUB_WORKSPACE}/terraform/regions/${{ matrix.region }} apply -auto-approve tfplan
 
-      # -------------------------------------------------
-      - name: Extract EC2 Public IP
-        id: ec2_ip
-        run: |
-          IP=$(terraform -chdir=${GITHUB_WORKSPACE}/terraform/regions/${{ matrix.region }} output -raw instance_public_ip 2>/dev/null || true)
-          echo "instance_ip=$IP" >> "$GITHUB_OUTPUT"
+  #   # -------------------------------------------------
+  #   - name: Extract EC2 Public IP
+  #     id: ec2_ip
+  #     run: |
+  #       IP=$(terraform -chdir=${GITHUB_WORKSPACE}/terraform/regions/${{ matrix.region }} output -raw instance_public_ip 2>/dev/null || true)
+  #       echo "instance_ip=$IP" >> "$GITHUB_OUTPUT"
 
-    outputs: # to use ec2_ip in next jobs
-      ec2_ip: ${{ steps.ec2_ip.outputs.instance_ip }}
+  # outputs: # to use ec2_ip in next jobs
+  #   ec2_ip: ${{ steps.ec2_ip.outputs.instance_ip }}
 
   # Job 3: Cloud environment configuration and application deployment with Ansible
   Ansible:
@@ -125,12 +125,12 @@ jobs:
           chmod 700 ~/.ssh
 
       - name: Add EC2 host key
-        run: ssh-keyscan -H ${{ needs.terraform.outputs.ec2_ip }} >> ~/.ssh/known_hosts
+        # run: ssh-keyscan -H ${{ needs.terraform.outputs.ec2_ip }} >> ~/.ssh/known_hosts
+        run: ssh-keyscan -H 34.201.63.93 >> ~/.ssh/known_hosts
 
       # -------------------------------------------------
       - name: Run Ansible
-        run: ansible-playbook -i "${{ needs.terraform.outputs.ec2_ip }}," -u ubuntu --private-key /tmp/aws_key.pem playbook.yml
-
+        run: ansible-playbook -i "34.201.63.93," -u ubuntu --private-key /tmp/aws_key.pem playbook.yml
 # Job 2: Infrastructure provisioning via shell script
 # launch-ec2: # shell script version
 #   needs: UT
