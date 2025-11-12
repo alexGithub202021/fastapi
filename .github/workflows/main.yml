@@ -1,11 +1,15 @@
 name: Test and deploy
 
+# on:
+#   push:
+#     branches:
+#       - 'main'
+#     paths-ignore:
+#       - "README.md"
+
 on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - "README.md"
+  workflow_dispatch:
+    # optional inputs here
 
 jobs:
   # Job 1: Run unit tests
