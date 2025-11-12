@@ -41,7 +41,7 @@
         state: directory
         owner: "{{ ansible_user }}"
         mode: "0700"
-      become: yes
+      become: no
 
     - name: Install GitHub deploy key
       copy:
@@ -50,7 +50,7 @@
         owner: "{{ ansible_user }}"
         mode: "0600"
       when: github_deploy_key is defined
-      become: yes
+      become: no
 
     - name: SSH config for GitHub
       copy:
@@ -62,7 +62,7 @@
             StrictHostKeyChecking yes
         owner: "{{ ansible_user }}"
         mode: "0600"
-      become: yes        
+      become: no        
 
     - name: Create project directory
       file:
