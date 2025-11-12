@@ -119,6 +119,14 @@ jobs:
       - name: Write SSH key
         run: echo "${{ secrets.AWS_SSH_KEY }}" > /tmp/aws_key.pem && chmod 400 /tmp/aws_key.pem
 
+      - name: Ensure .ssh exists
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+      
+      - name: Add EC2 host key
+        run: ssh-keyscan -H 13.217.198.142 >> ~/.ssh/known_hosts        
+
       # -------------------------------------------------
       - name: Run Ansible
         run: ansible-playbook -i "13.217.198.142," -u ubuntu --private-key /tmp/aws_key.pem playbook.yml
