@@ -43,23 +43,6 @@
         group: "{{ ansible_user }}"
         mode: "0755"
 
-    - name: Set .ssh directory permissions
-      file:
-        path: /home/{{ ansible_user }}/.ssh
-        state: directory
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
-        mode: "0700"
-
-    - name: Write SSH key from environment
-      copy:
-        content: "{{ lookup('env','AWS_SSH_KEY') }}"
-        dest: /home/{{ ansible_user }}/.ssh/id_rsa
-        mode: "0600"
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
-      when: lookup('env','AWS_SSH_KEY', default='') != ''
-
     - name: Add GitHub.com SSH host key
       known_hosts:
         name: github.com
