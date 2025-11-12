@@ -10,112 +10,110 @@
     docker_compose_file: docker-compose.prod.yml
 
   tasks:
+    # - name: Confirm GitHub key is passed
+    #   debug:
+    #     msg: "GitHub key length: {{ github_ssh_key_content | length }} chars, testEcho: {{ testEcho | default('MISSING') }}, ssh k: {{ github_ssh_key_content }}"
+    #   when: github_ssh_key_content is defined
 
-    - name: Confirm GitHub key is passed
-      debug:
-        msg: "GitHub key length: {{ github_ssh_key_content | length }} chars, testEcho: {{ testEcho | default('MISSING') }}, ssh k: {{ github_ssh_key_content }}"
-      when: github_ssh_key_content is defined    
+    - name: Update apt cache and upgrade
+      apt:
+        update_cache: yes
+        upgrade: dist
+        force_apt_get: yes
 
+    - name: Install Docker and Docker Compose
+      apt:
+        name:
+          - docker.io
+          - docker-compose
+        state: present
 
-    # - name: Update apt cache and upgrade
-    #   apt:
-    #     update_cache: yes
-    #     upgrade: dist
-    #     force_apt_get: yes
+    - name: Ensure Docker service is running
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
 
-    # - name: Install Docker and Docker Compose
-    #   apt:
-    #     name:
-    #       - docker.io
-    #       - docker-compose
-    #     state: present
+    - name: Add ansible user to docker group
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
 
-    # - name: Ensure Docker service is running
-    #   systemd:
-    #     name: docker
-    #     state: started
-    #     enabled: yes
+    - name: Create .ssh dir
+      file:
+        path: /home/{{ ansible_user }}/.ssh
+        state: directory
+        owner: "{{ ansible_user }}"
+        mode: "0700"
+      become: no
 
-    # - name: Add ansible user to docker group
-    #   user:
-    #     name: "{{ ansible_user }}"
-    #     groups: docker
-    #     append: yes
+    - name: Install GitHub deploy key
+      copy:
+        content: "{{ github_ssh_key_content }}"
+        dest: /home/{{ ansible_user }}/.ssh/id_github
+        owner: "{{ ansible_user }}"
+        mode: "0600"
+      when: github_deploy_key is defined
+      become: no
 
-    # - name: Create .ssh dir
-    #   file:
-    #     path: /home/{{ ansible_user }}/.ssh
-    #     state: directory
-    #     owner: "{{ ansible_user }}"
-    #     mode: "0700"
-    #   become: no
+    - name: SSH config for GitHub
+      copy:
+        dest: /home/{{ ansible_user }}/.ssh/config
+        content: |
+          Host github.com
+            User git
+            IdentityFile /home/{{ ansible_user }}/.ssh/id_github
+            StrictHostKeyChecking yes
+        owner: "{{ ansible_user }}"
+        mode: "0600"
+      become: no
 
-    # - name: Install GitHub deploy key
-    #   copy:
-    #     content: "{{ github_ssh_key_content }}"
-    #     dest: /home/{{ ansible_user }}/.ssh/id_github
-    #     owner: "{{ ansible_user }}"
-    #     mode: "0600"
-    #   when: github_deploy_key is defined
-    #   become: no
+    - name: Create project directory
+      file:
+        path: "{{ project_path }}"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: "0755"
 
-    # - name: SSH config for GitHub
-    #   copy:
-    #     dest: /home/{{ ansible_user }}/.ssh/config
-    #     content: |
-    #       Host github.com
-    #         User git
-    #         IdentityFile /home/{{ ansible_user }}/.ssh/id_github
-    #         StrictHostKeyChecking yes
-    #     owner: "{{ ansible_user }}"
-    #     mode: "0600"
-    #   become: no        
+    - name: Add GitHub.com SSH host key
+      known_hosts:
+        name: github.com
+        key: "{{ lookup('pipe', 'ssh-keyscan -H github.com 2>/dev/null') }}"
+        path: /home/{{ ansible_user }}/.ssh/known_hosts
+        state: present
 
-    # - name: Create project directory
-    #   file:
-    #     path: "{{ project_path }}"
-    #     state: directory
-    #     owner: "{{ ansible_user }}"
-    #     group: "{{ ansible_user }}"
-    #     mode: "0755"
+    - name: Set correct permissions for known_hosts
+      file:
+        path: /home/{{ ansible_user }}/.ssh/known_hosts
+        mode: "0644"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
 
-    # - name: Add GitHub.com SSH host key
-    #   known_hosts:
-    #     name: github.com
-    #     key: "{{ lookup('pipe', 'ssh-keyscan -H github.com 2>/dev/null') }}"
-    #     path: /home/{{ ansible_user }}/.ssh/known_hosts
-    #     state: present
+    - name: Clone or update Git repository
+      git:
+        repo: "{{ git_repo }}"
+        dest: "{{ project_path }}"
+        version: main
+        force: yes
+        update: yes
+        # accept_hostkey: yes
+      environment:
+        HOME: /home/{{ ansible_user }}
+      become: no
 
-    # - name: Set correct permissions for known_hosts
-    #   file:
-    #     path: /home/{{ ansible_user }}/.ssh/known_hosts
-    #     mode: "0644"
-    #     owner: "{{ ansible_user }}"
-    #     group: "{{ ansible_user }}"
+    - name: Create logs directory
+      file:
+        path: "{{ project_path }}/app/logs"
+        state: directory
+        mode: "0777"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
 
-    # - name: Clone or update Git repository
-    #   git:
-    #     repo: "{{ git_repo }}"
-    #     dest: "{{ project_path }}"
-    #     version: main
-    #     force: yes
-    #     update: yes
-    #     # accept_hostkey: yes
-    #   environment:
-    #     HOME: /home/{{ ansible_user }}
-    #   become: no      
-
-    # - name: Create logs directory
-    #   file:
-    #     path: "{{ project_path }}/app/logs"
-    #     state: directory
-    #     mode: "0777"
-    #     owner: "{{ ansible_user }}"
-    #     group: "{{ ansible_user }}"
-
-    # - name: Launch Docker Compose
-    #   command: docker-compose -f {{ docker_compose_file }} up -d
-    #   args:
-    #     chdir: "{{ project_path }}"
-    #   environment:
-    #     PATH: "/usr/local/bin:/usr/bin:{{ ansible_env.PATH }}"
+    - name: Launch Docker Compose
+      command: docker-compose -f {{ docker_compose_file }} up -d
+      args:
+        chdir: "{{ project_path }}"
+      environment:
+        PATH: "/usr/local/bin:/usr/bin:{{ ansible_env.PATH }}"
