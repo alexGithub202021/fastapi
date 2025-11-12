@@ -10,15 +10,41 @@
     docker_compose_file: docker-compose.prod.yml
 
   tasks:
+    # - name: Show forwarded SSH keys
+    #   shell: ssh-add -l || true
+    #   register: ssh_keys
 
-    - name: Show forwarded SSH keys
-      shell: ssh-add -l || true
-      register: ssh_keys
+    # - name: Debug forwarded keys
+    #   debug:
+    #     msg: "{{ ssh_keys.stdout }}"
 
-    - name: Debug forwarded keys
-      debug:
-        msg: "{{ ssh_keys.stdout }}"
+    - name: Verify CI deploy key is forwarded and authorized
+      block:
+        - name: Test SSH auth to GitHub
+          command: >-
+            ssh -T -o StrictHostKeyChecking=accept-new 
+            -o IdentitiesOnly=yes 
+            git@github.com
+          environment:
+            HOME: /home/{{ ansible_user }}
+          register: github_auth
+          changed_when: false
+          failed_when: false
+          no_log: true
+          become: no
 
+        - name: Assert deploy key works
+          assert:
+            that:
+              - github_auth.rc == 1
+              - "'successfully authenticated' in github_auth.stdout"
+            fail_msg: |
+              Deploy key forwarding FAILED.
+              Output: {{ github_auth.stdout | default('') }}
+              Return code: {{ github_auth.rc }}
+            success_msg: "Deploy key from CI is active and authorized."
+          no_log: true
+      tags: [precheck, ssh]
 
     # - name: Update apt cache and upgrade
     #   apt:
