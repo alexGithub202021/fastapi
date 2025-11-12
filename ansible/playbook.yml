@@ -96,6 +96,7 @@
         # accept_hostkey: yes
       environment:
         HOME: /home/{{ ansible_user }}
+      become: no      
 
     - name: Create logs directory
       file:
