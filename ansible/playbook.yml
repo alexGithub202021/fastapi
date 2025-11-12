@@ -53,6 +53,7 @@
         content: "{{ lookup('env','AWS_SSH_KEY') }}"
         dest: /home/{{ ansible_user }}/.ssh/id_rsa
         mode: "0600"
+      become: no
       when: lookup('env','AWS_SSH_KEY', default='') != ''
 
     # 6. Ensure .ssh permissions are correct
@@ -63,6 +64,7 @@
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
         mode: "0700"
+      become: no
 
     # 7. Add GitHub host key
     - name: Add GitHub.com SSH host key
@@ -92,6 +94,7 @@
         key_file: /home/{{ ansible_user }}/.ssh/id_rsa
       environment:
         HOME: /home/{{ ansible_user }}
+      become: no
 
     # 10. Create logs directory inside app
     - name: Create logs directory
@@ -101,6 +104,7 @@
         mode: "0777"
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
+      become: yes
 
     # 11. Run Docker Compose
     - name: Launch Docker Compose
