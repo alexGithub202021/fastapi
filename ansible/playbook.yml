@@ -10,14 +10,12 @@
     docker_compose_file: docker-compose.prod.yml
 
   tasks:
-    # 1. Update apt packages
     - name: Update apt cache and upgrade
       apt:
         update_cache: yes
         upgrade: dist
         force_apt_get: yes
 
-    # 2. Install Docker and Docker Compose via apt
     - name: Install Docker and Docker Compose
       apt:
         name:
@@ -31,14 +29,12 @@
         state: started
         enabled: yes
 
-    # 3. Add user to Docker group
     - name: Add ansible user to docker group
       user:
         name: "{{ ansible_user }}"
         groups: docker
         append: yes
 
-    # 4. Ensure project directory exists
     - name: Create project directory
       file:
         path: "{{ project_path }}"
@@ -47,7 +43,23 @@
         group: "{{ ansible_user }}"
         mode: "0755"
 
-    # 5. Add GitHub host key
+    - name: Set .ssh directory permissions
+      file:
+        path: /home/{{ ansible_user }}/.ssh
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: "0700"
+
+    - name: Write SSH key from environment
+      copy:
+        content: "{{ lookup('env','AWS_SSH_KEY') }}"
+        dest: /home/{{ ansible_user }}/.ssh/id_rsa
+        mode: "0600"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+      when: lookup('env','AWS_SSH_KEY', default='') != ''
+
     - name: Add GitHub.com SSH host key
       known_hosts:
         name: github.com
@@ -55,7 +67,6 @@
         path: /home/{{ ansible_user }}/.ssh/known_hosts
         state: present
 
-    # 6. Fix permissions of known_hosts file
     - name: Set correct permissions for known_hosts
       file:
         path: /home/{{ ansible_user }}/.ssh/known_hosts
@@ -63,7 +74,6 @@
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
 
-    # 7. Clone or update the Git repository
     - name: Clone or update Git repository
       git:
         repo: "{{ git_repo }}"
@@ -74,9 +84,7 @@
         # accept_hostkey: yes
       environment:
         HOME: /home/{{ ansible_user }}
-      become: no
 
-    # 8. Create logs directory inside app
     - name: Create logs directory
       file:
         path: "{{ project_path }}/app/logs"
@@ -84,13 +92,10 @@
         mode: "0777"
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
-      become: yes
 
-    # 9. Run Docker Compose
     - name: Launch Docker Compose
       command: docker-compose -f {{ docker_compose_file }} up -d
       args:
         chdir: "{{ project_path }}"
       environment:
         PATH: "/usr/local/bin:/usr/bin:{{ ansible_env.PATH }}"
-      become: yes
