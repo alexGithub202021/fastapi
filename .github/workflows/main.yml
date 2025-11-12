@@ -96,7 +96,7 @@ jobs:
 
   # Job 3: Cloud environment configuration and application deployment with Ansible
   Ansible:
-    needs: terraform
+    # needs: terraform
     name: Configure Cloud environment (AWS EC2 instance) and deploy application
     runs-on: ubuntu-latest
     env:
