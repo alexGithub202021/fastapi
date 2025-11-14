@@ -7,7 +7,15 @@ provider "aws" {
 data "aws_instances" "existing" {
   filter {
     name   = "tag:Name"
-    values = ["my-app"]
+    values = [var.key_name]
+  }
+  filter {
+    name   = "instance-type"
+    values = [var.instance_type]
+  }
+  filter {
+    name   = "availability-zone"
+    values = [var.aws_region]
   }
 }
 
