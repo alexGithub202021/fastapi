@@ -7,12 +7,6 @@ router = APIRouter(prefix="/api/V1/users", tags=["users"])
 service = user_service.User_service()
 
 
-@router.get("/test")
-def read_root():
-    msg = "hello world"
-    return {"message": msg}
-
-
 @router.get("/")
 def list_users():
     try:
@@ -64,8 +58,8 @@ def delete_user(login: str, response: Response):
 
 
 def convert_to_json(rows):
-    state.logger.info("Description of cursor: ") 
-    state.logger.info(state.cur.description)   
+    state.logger.info("Description of cursor: ")
+    state.logger.info(state.cur.description)
     columns = [desc[0] for desc in state.cur.description]
     result = [dict(zip(columns, row)) for row in rows]
     return result
@@ -105,3 +99,9 @@ def get_analytics(login: str, date_begin: str, date_end: str):
             raise HTTPException(status_code=400, detail=str(e))
     else:
         raise HTTPException(status_code=422, detail="Invalid input types")
+
+
+@router.get("/test")
+def read_root():
+    msg = "hello world"
+    return {"message": msg}
