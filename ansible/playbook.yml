@@ -20,7 +20,7 @@
       apt:
         name:
           - docker.io
-          - docker-compose
+          # - docker-compose
         state: present
 
     - name: Ensure Docker service is running
@@ -28,6 +28,12 @@
         name: docker
         state: started
         enabled: yes
+
+    - name: Install Docker Compose Plugin
+      get_url:
+        url: https://github.com/docker/compose/releases/download/v2.29.7/docker-compose-linux-x86_64
+        dest: /usr/local/lib/docker/cli-plugins/docker-compose
+        mode: "0755"        
 
     - name: Add ansible user to docker group
       user:
