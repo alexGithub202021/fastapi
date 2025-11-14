@@ -43,6 +43,9 @@
         dest: /usr/local/lib/docker/cli-plugins/docker-compose
         mode: "0755"
 
+    - name: print Docker Compose version
+      command: docker compose version
+
     - name: Add ansible user to docker group
       user:
         name: "{{ ansible_user }}"

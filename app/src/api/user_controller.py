@@ -101,7 +101,7 @@ def get_analytics(login: str, date_begin: str, date_end: str):
         raise HTTPException(status_code=422, detail="Invalid input types")
 
 
-# @router.get("/greatings")
-# def read_root():
-#     msg = "hello world"
-#     return {"message": msg}
+@router.get("/greatings")
+def read_root():
+    msg = "hello world"
+    return {"message": msg}
