@@ -13,39 +13,39 @@ on:
 
 jobs:
   # Job 1: Run unit tests
-  # UT:
-  #   runs-on: ubuntu-latest
+  UT:
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     # -------------------------------------------------
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v4
+    steps:
+      # -------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-  #     # -------------------------------------------------
-  #     - name: Build and start containers
-  #       run: docker compose -f docker-compose.test.yml up -d --build db python
+      # -------------------------------------------------
+      - name: Build and start containers
+        run: docker compose -f docker-compose.test.yml up -d --build db python
 
-  #     # -------------------------------------------------
-  #     - name: Wait for DB readiness
-  #       run: |
-  #         for i in {1..10}; do
-  #           docker exec postgres16 pg_isready -U admin && break
-  #           echo "waiting for db..."
-  #           sleep 3
-  #         done
+      # -------------------------------------------------
+      - name: Wait for DB readiness
+        run: |
+          for i in {1..10}; do
+            docker exec postgres16 pg_isready -U admin && break
+            echo "waiting for db..."
+            sleep 3
+          done
 
-  #     # -------------------------------------------------
-  #     - name: Run unit tests
-  #       run: docker exec python poetry run pytest -v
+      # -------------------------------------------------
+      - name: Run unit tests
+        run: docker exec python poetry run pytest -v
 
-  #     # -------------------------------------------------
-  #     - name: Tear down
-  #       if: always()
-  #       run: docker compose -f docker-compose.test.yml down -v
+      # -------------------------------------------------
+      - name: Tear down
+        if: always()
+        run: docker compose -f docker-compose.test.yml down -v
 
   # Job 2: Provision Infrastructure with Terraform
   terraform:
-    # needs: UT
+    needs: UT
     name: Provision Infrastructure for ${{ matrix.region }}
     runs-on: ubuntu-latest
 
@@ -153,61 +153,3 @@ jobs:
             --private-key /tmp/aws_key.pem \
             playbook.yml \
             -e "ansible_ssh_extra_args='-A'"
-
-# Job 2: Infrastructure provisioning via shell script
-# launch-ec2: # shell script version
-#   needs: UT
-#   runs-on: ubuntu-latest
-#   steps:
-#     - uses: actions/checkout@v3
-
-#     - name: Check AWS CLI
-#       run: aws --version
-
-#     # - name: Install AWS CLI
-#     #   run: sudo apt-get update && sudo apt-get install -y awscli #
-
-#     - name: Launch EC2 instance
-#       env:
-#         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#         AWS_DEFAULT_REGION: us-east-1
-#         AMI_ID: ami-01b9f1e7dc427266e
-#         KEY_NAME: ssh-key-1
-#         SECURITY_GROUP_ID: sg-08bf60be2d844a0c4
-#         INSTANCE_TYPE: t4g.small
-#         INSTANCE_NAME: i1
-#       run: |
-#         bash ec2-launch.sh
-
-# Job 4: Cloud deployment
-# deploy:
-#   needs: Ansible
-#   runs-on: ubuntu-latest
-#   # environment: production
-#   steps:
-#     - run: echo "Deploy"
-
-#     - name: Checkout
-#       uses: actions/checkout@v3
-
-#     - name: Configure AWS credentials
-#       uses: aws-actions/configure-aws-credentials@v1
-#       with:
-#         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#         aws-region: ${{ env.AWS_DEFAULT_REGION }}
-
-#     - name: SSH into EC2 instance, copy files and deploy
-#       id: EC2-actions-docker-compose
-#       env:
-#         host: ${{ env.PUBLIC_IP }}
-#         username: ${{ secrets.EC2_USERNAME }}
-#         key: ${{ secrets.EC2_SSH_KEY }}
-#         port: ${{ secrets.EC2_SSH_PORT }}
-#       run: |
-#         echo "$key" > ssh_key.pem
-#         chmod 500 ssh_key.pem
-#         ssh -i ssh_key.pem -p $port -o StrictHostKeyChecking=no $username@$host 'sudo chmod 777 -R fastapi'
-#         scp -r -i ssh_key.pem -P $port -o StrictHostKeyChecking=no ./* $username@$host:/home/ubuntu/ts  # -> git pull instead..
-#         ssh -i ssh_key.pem -p $port -o StrictHostKeyChecking=yes $username@$host 'cd fastapi && docker-compose -f docker-compose.prod.yml up -d'

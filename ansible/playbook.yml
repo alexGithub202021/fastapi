@@ -104,16 +104,3 @@
         chdir: "{{ project_path }}"
       environment:
         PATH: "/usr/local/bin:/usr/bin:{{ ansible_env.PATH }}"
-
-    # - name: Pull and deploy
-    #   community.docker.docker_compose_v2:
-    #     project_src: .
-    #     files: {{ docker_compose_file }}
-    #     pull: yes
-    #     build: yes # Only if local build needed; skip for CI images
-    #     dependencies: no # Skips deps—your precision goal
-    #     state: present
-    #     recreate: always # Forces changed services; safer than --force-recreate
-    #   register: output
-    #   args:
-    #     chdir: "{{ project_path }}"
