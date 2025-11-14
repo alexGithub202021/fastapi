@@ -4,7 +4,15 @@ provider "aws" {
   region = var.aws_region
 }
 
+data "aws_instance" "existing" {
+  filter {
+    name   = "tag:Name"
+    values = ["my-app"]
+  }
+}
+
 resource "aws_instance" "app" {
+  count = length(data.aws_instance.existing.ids) == 0 ? 1 : 0
   ami                    = var.ami_id
   instance_type          = var.instance_type
   key_name               = var.key_name
