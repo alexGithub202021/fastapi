@@ -1,15 +1,15 @@
 name: Test and deploy
 
-# on:
-#   push:
-#     branches:
-#       - 'main'
-#     paths-ignore:
-#       - "README.md"
-
 on:
-  workflow_dispatch:
-    # optional inputs here
+  push:
+    branches:
+      - "main"
+    paths-ignore:
+      - "README.md"
+
+# on:
+#   workflow_dispatch:
+#     # optional inputs here
 
 jobs:
   # Job 1: Run unit tests
@@ -102,58 +102,57 @@ jobs:
       ec2_ip: ${{ steps.ec2_ip.outputs.instance_ip }}
 
   # Job 3: Cloud environment configuration and application deployment with Ansible
-  Ansible:
-    needs: terraform
-    name: Configure Cloud environment (AWS EC2 instance) and deploy application
-    runs-on: ubuntu-latest
-    env:
-      ANSIBLE_HOST_KEY_CHECKING: "False" # only for tests
-    defaults:
-      run:
-        working-directory: ./ansible
-    steps:
-      # -------------------------------------------------
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  # Ansible:
+  #   needs: terraform
+  #   name: Configure Cloud environment (AWS EC2 instance) and deploy application
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     ANSIBLE_HOST_KEY_CHECKING: "False" # only for tests
+  #   defaults:
+  #     run:
+  #       working-directory: ./ansible
+  #   steps:
+  #     # -------------------------------------------------
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
 
-      # -------------------------------------------------
-      - name: Setup SSH agent
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.DEPLOY_KEY }}
+  #     # -------------------------------------------------
+  #     - name: Setup SSH agent
+  #       uses: webfactory/ssh-agent@v0.9.0
+  #       with:
+  #         ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 
-      # # -------------------------------------------------
-      # - name: Test SSH (optional)
-      #   run: ssh-add -l
-      #   run: ssh -T git@github.com  # Should say "Hi username! You've successfully authenticated..."
+  #     # # -------------------------------------------------
+  #     # - name: Test SSH (optional)
+  #     #   run: ssh-add -l
+  #     #   run: ssh -T git@github.com  # Should say "Hi username! You've successfully authenticated..."
 
-      # -------------------------------------------------
-      - name: Set up Ansible
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ansible sshpass
+  #     # -------------------------------------------------
+  #     - name: Set up Ansible
+  #       run: |
+  #         sudo apt-get update
+  #         sudo apt-get install -y ansible sshpass
 
-      # -------------------------------------------------
-      - name: Write SSH key
-        run: echo "${{ secrets.AWS_SSH_KEY }}" > /tmp/aws_key.pem && chmod 400 /tmp/aws_key.pem
+  #     # -------------------------------------------------
+  #     - name: Write SSH key
+  #       run: echo "${{ secrets.AWS_SSH_KEY }}" > /tmp/aws_key.pem && chmod 400 /tmp/aws_key.pem
 
-      - name: Ensure .ssh exists
-        run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
+  #     - name: Ensure .ssh exists
+  #       run: |
+  #         mkdir -p ~/.ssh
+  #         chmod 700 ~/.ssh
 
-      - name: Add EC2 host key
-        run: ssh-keyscan -H ${{ needs.terraform.outputs.ec2_ip }}  >> ~/.ssh/known_hosts
+  #     - name: Add EC2 host key
+  #       run: ssh-keyscan -H ${{ needs.terraform.outputs.ec2_ip }}  >> ~/.ssh/known_hosts
 
-      # -------------------------------------------------
-      - name: Run Ansible
-        run: |
-          ansible-playbook -i "${{ needs.terraform.outputs.ec2_ip }} ," \
-            -u ubuntu \
-            --private-key /tmp/aws_key.pem \
-            playbook.yml \
-            -e "ansible_ssh_extra_args='-A'"
-
+  #     # -------------------------------------------------
+  #     - name: Run Ansible
+  #       run: |
+  #         ansible-playbook -i "${{ needs.terraform.outputs.ec2_ip }} ," \
+  #           -u ubuntu \
+  #           --private-key /tmp/aws_key.pem \
+  #           playbook.yml \
+  #           -e "ansible_ssh_extra_args='-A'"
 # Job 2: Infrastructure provisioning via shell script
 # launch-ec2: # shell script version
 #   needs: UT
