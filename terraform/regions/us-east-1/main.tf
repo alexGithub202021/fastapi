@@ -11,7 +11,7 @@ data "aws_instances" "existing" {
   }
 }
 
-resource "aws_instance" "app" {
+resource "aws_instances" "app" {
   count = length(data.aws_instances.existing.ids) == 0 ? 1 : 0
   ami                    = var.ami_id
   instance_type          = var.instance_type
