@@ -101,7 +101,7 @@ jobs:
     outputs: # to use ec2_ip in next jobs
       ec2_ip: ${{ steps.ec2_ip.outputs.instance_ip }}
 
-  Job 3: Cloud environment configuration and application deployment with Ansible
+  # Job 3: Cloud environment configuration and application deployment with Ansible
   Ansible:
     needs: terraform
     name: Configure Cloud environment (AWS EC2 instance) and deploy application
