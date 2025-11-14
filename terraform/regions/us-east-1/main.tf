@@ -4,7 +4,7 @@ provider "aws" {
   region = var.aws_region
 }
 
-data "aws_instance" "existing" {
+data "aws_instances" "existing" {
   filter {
     name   = "tag:Name"
     values = ["my-app"]

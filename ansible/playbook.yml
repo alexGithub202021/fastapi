@@ -62,8 +62,8 @@
         repo: "{{ git_repo }}"
         dest: "{{ project_path }}"
         version: main
-        force: yes
-        update: yes
+        update: yes # pull latest changes if repo exists
+        force: yes # optional: overwrite local changes if needed
         # accept_hostkey: yes
       environment:
         HOME: /home/{{ ansible_user }}
