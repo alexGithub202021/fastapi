@@ -94,10 +94,22 @@
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
 
-    - name: Launch Docker Compose
-      # command: docker compose -f {{ docker_compose_file }} up -d --force-recreate # --force-recreate -> recreate all containers with updated config/images
-      command: docker compose -f {{ docker_compose_file }} pull & docker compose -f {{ docker_compose_file }} up -d --no-deps --build # Pulls latest images (CI-tagged), rebuilds only changed services, restarts only affected containers.
+    # - name: Launch Docker Compose
+    #   command: docker compose -f {{ docker_compose_file }} up -d --force-recreate # --force-recreate -> recreate all containers with updated config/images
+    #   # command: docker compose -f {{ docker_compose_file }} pull & docker compose -f {{ docker_compose_file }} up -d --no-deps --build # Pulls latest images (CI-tagged), rebuilds only changed services, restarts only affected containers.
+    #   args:
+    #     chdir: "{{ project_path }}"
+    #   environment:
+    #     PATH: "/usr/local/bin:/usr/bin:{{ ansible_env.PATH }}"
+
+    - name: Pull and deploy
+      community.docker.docker_compose:
+        project_src: .
+        files: docker-compose.prod.yml
+        pull: yes
+        build: yes
+        recreated: yes
+        dependencies: no
+        state: present
       args:
         chdir: "{{ project_path }}"
-      environment:
-        PATH: "/usr/local/bin:/usr/bin:{{ ansible_env.PATH }}"
