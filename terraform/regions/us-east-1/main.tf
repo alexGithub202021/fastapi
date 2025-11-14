@@ -13,10 +13,6 @@ data "aws_instances" "existing" {
     name   = "instance-type"
     values = [var.instance_type]
   }
-  filter {
-    name   = "availability-zone"
-    values = [var.aws_region]
-  }
 }
 
 resource "aws_instance" "app" {
