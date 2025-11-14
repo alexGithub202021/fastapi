@@ -8,7 +8,7 @@ on:
       - "README.md"
 
 # on:
-#   workflow_dispatch:
+#   workflow_dispatch: # for manual launch
 #     # optional inputs here
 
 jobs:
