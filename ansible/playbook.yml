@@ -94,22 +94,25 @@
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
 
-    # - name: Launch Docker Compose
+    # - name: Pull then up
     #   command: docker compose -f {{ docker_compose_file }} up -d --force-recreate # --force-recreate -> recreate all containers with updated config/images
-    #   # command: docker compose -f {{ docker_compose_file }} pull & docker compose -f {{ docker_compose_file }} up -d --no-deps --build # Pulls latest images (CI-tagged), rebuilds only changed services, restarts only affected containers.
+    #   ansible.builtin.command: >
+    #     docker compose -f docker-compose.prod.yml pull &&
+    #     docker compose -f docker-compose.prod.yml up -d --no-deps --build # Pulls latest images (CI-tagged), rebuilds only changed services, restarts only affected containers.
     #   args:
     #     chdir: "{{ project_path }}"
     #   environment:
     #     PATH: "/usr/local/bin:/usr/bin:{{ ansible_env.PATH }}"
 
     - name: Pull and deploy
-      community.docker.docker_compose:
+      community.docker.docker_compose_v2:
         project_src: .
         files: docker-compose.prod.yml
         pull: yes
-        build: yes
-        recreated: yes
-        dependencies: no
+        build: yes # Only if local build needed; skip for CI images
+        dependencies: no # Skips deps—your precision goal
         state: present
+        recreate: always # Forces changed services; safer than --force-recreate
+      register: output
       args:
         chdir: "{{ project_path }}"
