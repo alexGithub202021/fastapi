@@ -12,7 +12,7 @@ data "aws_instances" "existing" {
 }
 
 resource "aws_instance" "app" {
-  count = length(data.aws_instance.existing.ids) == 0 ? 1 : 0
+  count = length(data.aws_instances.existing.ids) == 0 ? 1 : 0
   ami                    = var.ami_id
   instance_type          = var.instance_type
   key_name               = var.key_name
