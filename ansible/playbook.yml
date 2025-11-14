@@ -92,7 +92,7 @@
         group: "{{ ansible_user }}"
 
     - name: Launch Docker Compose
-      command: docker-compose -f {{ docker_compose_file }} up -d --force-recreate # --force-recreate -> recreate all containers with updated config/images
+      command: docker compose -f {{ docker_compose_file }} up -d --force-recreate # --force-recreate -> recreate all containers with updated config/images
       args:
         chdir: "{{ project_path }}"
       environment:
