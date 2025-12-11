@@ -23,7 +23,7 @@ jobs:
 
       # -------------------------------------------------
       - name: Build and start containers
-        run: docker compose -f docker-compose.prod.yml up -d --build db python
+        run: docker compose -f docker-compose.test.yml up -d --build db python
 
       # -------------------------------------------------
       - name: Wait for DB readiness
@@ -41,7 +41,7 @@ jobs:
       # -------------------------------------------------
       - name: Tear down
         if: always()
-        run: docker compose -f docker-compose.prod.yml down -v
+        run: docker compose -f docker-compose.test.yml down -v
 
   # Job 2: Provision Infrastructure with Terraform
   terraform:
