@@ -1,0 +1,63 @@
+networks: 
+  fastapi:
+
+services:
+  python:
+    container_name: python
+    build:
+      context: "./app/"
+    ports:
+      - "8000:8000"
+      - "5680:5680"
+    volumes:  
+      - ./app:/app
+    depends_on:
+      - db
+    command: tail -f /dev/null  # keeps it alive for docker exec -> github actions
+    networks:
+      - fastapi
+    environment:
+      - WAIT_FOR_CLIENT=1
+
+  nginx:
+    container_name: nginx
+    image: nginx:stable-alpine
+    ports:
+      - "99:80"
+    volumes:
+      - ./app:/app
+      - ./nginx:/etc/nginx/conf.d
+    depends_on:
+      - python
+    networks:
+      - fastapi
+
+  db:
+    image: postgres:16
+    container_name: postgres16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: pwd
+      POSTGRES_DB: tm
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+      - ./db_dump:/docker-entrypoint-initdb.d # Mount SQL script
+    networks:
+      - fastapi
+
+  # pgadmin:
+  #   image: dpage/pgadmin4:latest
+  #   container_name: pgadmin4
+  #   restart: unless-stopped
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: admin@example.com
+  #     PGADMIN_DEFAULT_PASSWORD: adminpwd
+  #   ports:
+  #     - "8082:80"
+  #   depends_on:
+  #     - db
+  #   networks:
+  #     - fastapi
