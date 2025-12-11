@@ -13,7 +13,7 @@ services:
       - ./app:/app
     depends_on:
       - db
-    command: tail -f /dev/null  # keeps it alive for docker exec -> github actions
+    # command: tail -f /dev/null  # keeps it alive for docker exec -> github actions
     networks:
       - fastapi
     environment:
