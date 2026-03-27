@@ -1,6 +1,6 @@
 # Fastapi rest api
 
-REST APIs built on python fastapi + postgresSQL DB, deployed on AWS using github actions + terraform + ansible
+REST APIs built on python fastapi + postgresSQL DB, deployed on AWS using github actions + terraform + ansible, using AI-augmented workfow
 
 ## Table of Contents
 
