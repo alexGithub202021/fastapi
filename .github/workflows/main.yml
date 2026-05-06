@@ -8,10 +8,6 @@ on:
     paths-ignore:
       - "README.md"
 
-# on:
-#   workflow_dispatch: # for manual launch
-#     # optional inputs here
-
 jobs:
   # Job 1: Run unit tests
   UT:
