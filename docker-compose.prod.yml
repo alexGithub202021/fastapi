@@ -1,5 +1,6 @@
 networks: 
   fastapi:
+  
 
 services:
   python:
