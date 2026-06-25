@@ -59,6 +59,7 @@ This a dockerised python fastapi REST API.
 - command:
   - poetry run pytest
 
+
 <!-- ## Debug (vscode)
 
 - in python dockerfile :
